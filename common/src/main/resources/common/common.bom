@@ -1,0 +1,48 @@
+###
+ # Catalog items that make it easier to write test cases.
+ # 
+ # Compared to early closed-source versions, the following have been renamed:
+ #  * centos-software-process -> centos7-software-process
+ ##
+
+brooklyn.catalog:
+  version: "0.1.0-SNAPSHOT" # COMMON_CATALOG_UTILS_VERSION
+  license_code: APACHE-2.0
+  publish:
+    description: |
+      Resources for common Apache Brooklyn entities
+    license_code: APACHE-2.0
+
+  items:
+    - id: conditional-entity
+      name: "Conditional Entity"
+      description: |
+        An entity that creates a child only if a configuration key is set
+      itemType: entity
+      item:
+        type: org.apache.brooklyn.entity.stock.ConditionalEntity
+        id: conditional-entity
+
+    - id: child-software-process
+      name: "Child Software Process"
+      description: |
+        A child entity that executes commands to run a process
+      itemType: entity
+      item:
+        type: org.apache.brooklyn.entity.software.base.VanillaSoftwareProcess
+        id: child-software-process
+
+    - id: centos7-software-process
+      name: "CentOS Software Process"
+      description: |
+        A VanillaSoftwareProcess, whose provisioning properties target CentOS 7.
+      itemType: entity
+      iconUrl: https://raw.githubusercontent.com/docker-library/docs/c4df0024e2cad985326dc38f6b6ce39abeab59c5/centos/logo.png
+      item:
+        type: org.apache.brooklyn.entity.software.base.VanillaSoftwareProcess
+        id: centos-software-process
+        brooklyn.config:
+          dontRequireTtyForSudo: true
+          provisioning.properties:
+            osFamily: centos
+            osVersionRegex: 7

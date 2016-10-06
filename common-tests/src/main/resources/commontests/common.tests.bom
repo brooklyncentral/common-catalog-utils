@@ -1,0 +1,308 @@
+###
+ # Catalog items that make it easier to write test cases.
+ # 
+ # Compared to early closed-source versions, the following have been renamed:
+ #  * ssh-test -> test-ssh
+ #  * sensor-test -> assert-sensor
+ #  * assert-down -> assert-not-up
+ #  * assert-up-initial -> assert-up-and-running-initial 
+ #  * test-stop -> invoke-stop
+ #  * test-stop-machine -> invoke-stop
+ #  * test-stop-process -> invoke-stop-process
+ #  * test-start -> invoke-start
+ #  * test-restart -> invoke-restart
+ #  * test-restart-process -> invoke-restart-process
+ #  * test-restart-machine -> invoke-restart-machine
+ #  * test-reachable -> assert-reachable
+ #  * ssh-cmd-restart -> ssh-cmd-reboot
+ ##
+
+brooklyn.catalog:
+  version: "0.1.0-SNAPSHOT" # COMMON_CATALOG_UTILS_VERSION
+  license_code: APACHE-2.0
+
+  items:
+
+    ##############################################################################################
+    # Basic test-case aliases. Naming convention is that:                                        #
+    #  - "assert-*" is a simple assertion, normally without side-effects. For example asserting  #
+    #    that a sensor has a specific value.                                                     #
+    #  - "test-*" is a simple wrapper around the test case. This could have side-effects, such   #
+    #    as invoking SSH commands etc.                                                           #
+    ##############################################################################################
+  
+    - id: test-case
+      item:
+        type: org.apache.brooklyn.test.framework.TestCase
+
+    - id: test-winrm
+      item:
+        type: org.apache.brooklyn.test.framework.TestWinrmCommand
+
+    - id: test-ssh
+      item:
+        type: org.apache.brooklyn.test.framework.TestSshCommand
+
+    - id: test-ssh-succeeds
+      item:
+        type: org.apache.brooklyn.test.framework.TestSshCommand
+        brooklyn.config:
+          assertStatus:
+            equals: 0
+
+    - id: test-http
+      item:
+        name: "HTTP Call"
+        type: org.apache.brooklyn.test.framework.TestHttpCall
+
+    - id: test-http-status-200
+      item:
+        name: "Check HTTP Response Status Code"
+        type: test-http
+        brooklyn.config:
+          applyAssertionTo: status
+          assert:
+            - isEqualTo: 200
+
+    - id: test-http-body
+      item:
+        name: "Check HTTP Response Body"
+        type: test-http
+        brooklyn.config:
+          applyAssertionTo: body
+
+    - id: loop-test-case
+      item:
+        name: "Loop over members"
+        type: org.apache.brooklyn.test.framework.LoopOverGroupMembersTestCase
+
+    - id: assert-reachable
+      item:
+        type: org.apache.brooklyn.test.framework.TestEndpointReachable
+        name: TEST endpoint reachable
+        brooklyn.config:
+          defaultDisplayName:
+            $brooklyn:formatString:
+              - "Endpoint %s"
+              - $brooklyn:config("endpointSensor")
+
+
+    ##############################################################################################
+    # Common sensor assertions.                                                                  #
+    ##############################################################################################
+
+    - id: assert-sensor
+      item:
+        type: org.apache.brooklyn.test.framework.TestSensor
+        brooklyn.config:
+          defaultDisplayName:
+            $brooklyn:formatString:
+              - "Sensor %s"
+              - $brooklyn:config("sensor")
+
+    - id: assert-up
+      item:
+        type: assert-sensor
+        sensor: service.isUp
+        assert:
+          - equals: true
+
+    - id: assert-not-up
+      item:
+        type: assert-sensor
+        name: service is not up
+        sensor: service.isUp
+        assert:
+          - equals: false
+
+    - id: assert-running
+      item:
+        type: assert-sensor
+        name: service is running
+        sensor: service.state
+        assert:
+          - matches: running
+
+    - id: assert-stopped
+      item:
+        type: assert-sensor
+        name: service is stopped
+        sensor: service.state
+        assert:
+          - matches: stopped
+
+    - id: assert-failed
+      item:
+        type: assert-sensor
+        name: service on-fire
+        sensor: service.state
+        assert:
+          - matches: on-fire
+
+    - id: assert-up-and-running
+      item:
+        type: test-case
+        name: service is up and running
+        brooklyn.children:
+          - type: assert-up
+          - type: assert-running
+
+    - id: assert-up-and-running-initial
+      item:
+        type: test-case
+        name: service is up and running
+        brooklyn.parameters:
+          - name: timeout.initialStartup
+            description: The timeout for provisioning, installing and launching the app-under-test.
+            type: org.apache.brooklyn.util.time.Duration
+            default: 1h
+        brooklyn.config:
+          # TODO timeout not working; does assert-up find the scopeRoot as that of assert-up item?!
+          timeout: $brooklyn:scopeRoot().config("timeout.initialStartup")
+        brooklyn.children:
+          - type: assert-up
+          - type: assert-running
+
+
+    ##############################################################################################
+    # Assertions that SSH to the VM, to do checks.                                               #
+    ##############################################################################################
+
+    - id: assert-process-running
+      item:
+        type: test-ssh-succeeds
+        name: process is running
+        brooklyn.parameters:
+          - name: process.grep.name
+            description: The name to grep for, to check if the process is running (e.g. "[p]ostgres")
+            type: string
+        brooklyn.config:
+          command:
+            $brooklyn:formatString:
+              - "ps -ef | grep '%s' | grep -v 'dhclient'"
+              - $brooklyn:config("process.grep.name")
+
+    - id: assert-process-not-running
+      item:
+        type: test-ssh
+        name: process is not running
+        brooklyn.parameters:
+          - name: process.grep.name
+            description: The name to grep for, to check if the process is running (e.g. "[p]ostgres")
+            type: string
+        brooklyn.config:
+          command:
+            $brooklyn:formatString:
+              - "ps -ef | grep '%s' | grep -v 'dhclient'"
+              - $brooklyn:config("process.grep.name")
+          assertStatus:
+            equals: 1
+
+
+    ##############################################################################################
+    # Effector invocations.                                                                      #
+    ##############################################################################################
+
+    - id: invoke-effector
+      item:
+        type: org.apache.brooklyn.test.framework.TestEffector
+        brooklyn.config:
+          defaultDisplayName:
+            $brooklyn:formatString:
+              - "Invoke %s"
+              - $brooklyn:config("effector")
+
+    - id: invoke-stop-machine
+      item:
+        type: invoke-effector
+        name: Invoke stop (including machine)
+        effector: stop
+
+    - id: invoke-stop-process
+      item:
+        type: invoke-effector
+        name: Invoke stop (just process)
+        effector: stop
+        brooklyn.config:
+          params:
+            stopMachineMode: NEVER
+
+    - id: invoke-start
+      item:
+        type: invoke-effector
+        name: Invoke start
+        effector: start
+
+    - id: invoke-restart
+      item:
+        type: invoke-effector
+        name: Invoke restart
+        effector: restart
+
+    - id: invoke-restart-process
+      item:
+        type: invoke-effector
+        name: Invoke restart (just process)
+        effector: restart
+        params:
+          restartMachine: false
+
+    - id: invoke-restart-machine
+      item:
+        type: invoke-effector
+        name: Invoke restart (including machine)
+        effector: restart
+        params:
+          restartMachine: true
+
+
+    ##############################################################################################
+    # Composite effector invocations, e.g. to check that "restart" or "stop; restart" does as    #
+    # expected.                                                                                  #
+    ##############################################################################################
+
+    ###
+     # Invokes restart, and confirms the entity/process comes back up.
+     # 
+     # Expects "process.grep.name" to be configured (e.g. with "[p]ostgres")
+     ##
+    - id: assert-restart-process
+      item:
+        type: test-case
+        name: "Restart process, and confirm up"
+        brooklyn.children:
+          - type: invoke-restart-process
+          - type: assert-up-and-running
+          - type: assert-process-running
+
+    ###
+     # Invokes stop, and then restart. It confirms the entity/process was stopped and then 
+     # starts again.
+     # 
+     # Expects "process.grep.name" to be configured (e.g. with "[p]ostgres")
+     ##
+    - id: assert-stop-and-restart-process
+      item:
+        type: test-case
+        name: "Stop and restart process, confirming down then up"
+        brooklyn.children:
+          - type: invoke-stop-process
+          - type: assert-not-up
+          - type: assert-stopped
+          - type: assert-process-not-running
+          - type: invoke-restart-process
+          - type: assert-up-and-running
+          - type: assert-process-running
+
+
+    ##############################################################################################
+    # SSH utilities.                                                                             #
+    ##############################################################################################
+
+    - id: ssh-cmd-reboot
+      item:
+        type: test-ssh
+        name: "Restart Machine"
+        brooklyn.config:
+          command: |
+            nohup sudo bash -c "sleep 5; shutdown -r now" &
