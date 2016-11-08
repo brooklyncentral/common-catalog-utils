@@ -17,11 +17,11 @@
   <build>
     <resources>
       <resource>
-        <directory>src/main/resources</directory>
+        <directory>catalog</directory>
         <filtering>false</filtering>
       </resource>
       <resource>
-        <directory>src/test/resources</directory>
+        <directory>tests</directory>
         <filtering>false</filtering>
         <targetPath>tests</targetPath>
       </resource>
@@ -42,9 +42,14 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/src/main/resources/common/common.bom</file>
+                  <file>${project.basedir}/catalog/common/common.bom</file>
                   <type>bom</type>
-                  <classifier>common-catalog</classifier>
+                  <classifier>common</classifier>
+                </artifact>
+                <artifact>
+                  <file>${project.basedir}/tests/common/common.bom</file>
+                  <type>bom</type>
+                  <classifier>common-tests</classifier>
                 </artifact>
               </artifacts>
             </configuration>
