@@ -179,7 +179,7 @@ brooklyn.catalog:
         brooklyn.config:
           command:
             $brooklyn:formatString:
-              - "ps -ef | grep '%s' | grep -v 'dhclient' | grep -v 'avahi'"
+              - "ps -ef | grep '%s' | grep -vE 'avahi|dhclient'"
               - $brooklyn:config("process.grep.name")
 
     - id: assert-process-not-running
@@ -193,7 +193,7 @@ brooklyn.catalog:
         brooklyn.config:
           command:
             $brooklyn:formatString:
-              - "ps -ef | grep '%s' | grep -v 'dhclient' | grep -v 'avahi'"
+              - "ps -ef | grep '%s' | grep -vE 'avahi|dhclient'"
               - $brooklyn:config("process.grep.name")
           assertStatus:
             equals: 1
