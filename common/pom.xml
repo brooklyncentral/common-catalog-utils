@@ -7,7 +7,7 @@
   <parent>
     <groupId>io.brooklyn.common</groupId>
     <artifactId>common-catalog-utils-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version> <!-- COMMON_CATALOG_UTILS_VERSION -->
+    <version>0.2.0-SNAPSHOT</version> <!-- COMMON_CATALOG_UTILS_VERSION -->
   </parent>
 
   <name>Common Catalog Utils</name>
