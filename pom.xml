@@ -7,7 +7,7 @@
     <groupId>io.brooklyn.common</groupId>
     <artifactId>common-catalog-utils-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.0-SNAPSHOT</version> <!-- COMMON_CATALOG_UTILS_VERSION -->
+    <version>0.1.0</version> <!-- COMMON_CATALOG_UTILS_VERSION -->
 
     <name>Common Catalog Utils</name>
     <description>Apache Brooklyn catalog items, to make writing blueprints and tests simpler</description>

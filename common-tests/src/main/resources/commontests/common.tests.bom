@@ -18,7 +18,7 @@
  ##
 
 brooklyn.catalog:
-  version: "0.1.0-SNAPSHOT" # COMMON_CATALOG_UTILS_VERSION
+  version: "0.1.0" # COMMON_CATALOG_UTILS_VERSION
   license_code: APACHE-2.0
 
   items:
