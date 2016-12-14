@@ -12,7 +12,7 @@
     <name>Common Catalog Utils</name>
     <description>Apache Brooklyn catalog items, to make writing blueprints and tests simpler</description>
     <url>https://github.com/brooklyncentral/common-catalog-utils</url>
-    
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -24,7 +24,6 @@
 
     <modules>
         <module>common</module>
-        <module>common-tests</module>
     </modules>
 
     <scm>
@@ -52,8 +51,11 @@
             <name>Aled Sage</name>
             <organizationUrl>https://github.com/aledsage</organizationUrl>
         </developer>
+        <developer>
+            <name>Andrew Kennedy</name>
+            <organizationUrl>https://github.com/grkvlt</organizationUrl>
     </developers>
-    
+
     <distributionManagement>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
