@@ -46,3 +46,62 @@ brooklyn.catalog:
           provisioning.properties:
             osFamily: centos
             osVersionRegex: 7
+    - id: brooklyn-cli
+      name: "Brooklyn CLI"
+      itemType: entity
+      item:
+        type: org.apache.brooklyn.entity.software.base.VanillaSoftwareProcess
+        id: brooklyn-cli
+        name: "Brooklyn CLI"
+        brooklyn.parameters: 
+          - name: brooklyn.cli.download.url
+            label: "Brooklyn CLI download URL"
+            description: Brooklyn CLI download URL
+            type: string
+        brooklyn.config:
+          shell.env:
+            INSTALL_DIR: $brooklyn:attributeWhenReady("install.dir")
+          install.command:
+            $brooklyn:formatString:
+              - |
+                if [ -z "%s" ]; then
+                  >&2 echo "Config key [brooklyn.cli.download.url] not supplied ... HARD FAIL"
+                  exit 1
+                fi
+
+                function blockUntilUiAvailable (){
+                  for RETRY_COUNT in {1..10}; do
+                    sleep $((2 * RETRY_COUNT))
+                    RESULT=$(curl --head -s "%s" | grep "HTTP/1.1 200 OK")
+                    if [ ! -z "${RESULT}" ]; then
+                      echo "UI Available ... proceeding"
+                      return 0
+                    else
+                      echo "Could not reach UI on attempt ${RETRY_COUNT}"
+                    fi
+                  done
+                  echo "Could not reach UI ... FAILING"
+                  return 1
+                }
+                blockUntilUiAvailable || exit 1
+                curl --retry 5 --keepalive-time 30 --speed-time 30 -L "%s" --output br
+                sudo mv ${INSTALL_DIR}/br /usr/sbin/br
+                chmod 755 /usr/sbin/br
+              - $brooklyn:config("brooklyn.cli.download.url")
+              - $brooklyn:config("brooklyn.cli.download.url")
+              - $brooklyn:config("brooklyn.cli.download.url")
+          launch.command: hash br
+          stop.command: hash br
+          checkRunning.command: hash br 
+        brooklyn.initializers:
+          - type: org.apache.brooklyn.core.effector.ssh.SshCommandEffector
+            brooklyn.config:
+              name: br
+              description: |
+                br command
+              parameters:
+                args:
+                  description: |
+                    Command Arguments
+              command: |
+                br ${args}            
